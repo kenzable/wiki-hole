@@ -1,0 +1,18 @@
+{
+  "manifest_version": 2,
+
+  "name": "Wiki Hole",
+  "author": "Mackenzie Turner",
+  "default_locale": "en",
+  "description": "This extension activates a link-hopping Wikipedia game.",
+  "version": "1.0",
+
+  "browser_action": {
+    "default_icon": "icon.png",
+    "default_popup": "popup.html"
+  },
+  "permissions": [
+    "activeTab",
+    "https://ajax.googleapis.com/"
+  ]
+}
