@@ -1,0 +1,23 @@
+{
+  "name": "wiki-hole",
+  "version": "1.0.0",
+  "description": "This extension activates a link-hopping Wikipedia game.",
+  "main": "popup.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kenzable/wiki-hole.git"
+  },
+  "author": "Mackenzie Turner",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kenzable/wiki-hole/issues"
+  },
+  "homepage": "https://github.com/kenzable/wiki-hole#readme",
+  "dependencies": {
+    "cheerio": "^0.22.0",
+    "request": "^2.75.0"
+  }
+}
