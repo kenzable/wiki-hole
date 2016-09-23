@@ -1,46 +1,53 @@
 var request = require('request');
 var cheerio = require('cheerio');
 
-/* Listen for messages */
-chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
-    /* If the received message has the expected format... */
-    if (msg.text && (msg.text == "report_back")) {
-        /* Call the specified callback, passing
-           the web-pages DOM content as argument */
-    sendResponse(document.getElementById("mybutton").innerHTML);
-    }
+//listen for game start message from popup
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+  if (request.message === 'start game') {
+    startGame(request.hops);
+    sendResponse({message: 'game started'});
+  }
 });
 
-//STEP ONE - search the dom for all internal hyperlinks
+function startGame(numHops){
+  var origin = document.origin,
+      startHtml = document.documentElement.innerHTML,
+      counter = 0,
+      trail = [];
 
-function httpRequest(link){
-  request(link, function(error, response, html){
-    if (!error) processHtml(html);
-    else console.error(error);
-  });
+  processHtml(startHtml);
+
+  function processHtml(html) {
+    counter++;
+    var $ = cheerio.load(html);
+    var links = $('#mw-content-text p a').filter(function(){
+        return $(this).attr('href')[0] !== '#';
+    });
+    if (counter <= numHops) httpRequest(getNext(links, $));
+    else sendGameData();
+  }
+  //get html for subsequent pages
+  function httpRequest(link){
+    request(link, function(error, response, html){
+      if (!error) processHtml(html);
+      else console.error(error);
+    });
+  }
+  //note - must pass in $ in order to use cheerio
+  function getNext(links, $){
+    var randomIndex = Math.floor((Math.random() * links.length));
+    var next = origin + $(links[randomIndex]).attr('href');
+    trail.push(next);
+    return next;
+  }
+  //send trail and target page to background for use in popup
+  function sendGameData(){
+    var message = { message: 'game data',
+                    trail: trail,
+                    targetPage: trail[trail.length - 1]
+                  };
+    chrome.runtime.sendMessage(message, function(response) {
+      console.log('response is here!', response.message);
+    });
+  }
 }
-
-var origin = document.origin;
-var startHtml = document.documentElement.innerHTML
-var counter = 0;
-
-var path = [];
-
-function processHtml(html) {
-  counter++;
-  var $ = cheerio.load(html);
-
-  var links = $('#mw-content-text p a').filter(function(){
-      return $(this).attr('href')[0] !== '#';
-  });
-
-  var randomIndex = Math.floor((Math.random() * links.length));
-  var next = origin + $(links[randomIndex]).attr('href');
-  path.push(next);
-
-  if (counter < 7) httpRequest(next);
-  else console.log(path);
-}
-
-processHtml(startHtml);
-
