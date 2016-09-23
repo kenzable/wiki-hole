@@ -1,12 +1,23 @@
-var urlRegex = /^https?:\/\/(?:[^./?#]+\.)?wikipedia\.org\/wiki/;
+var targetPage, goalTrail, userTrail = [];
 
-function doStuffWithDom(domContent) {
-  alert('I got it!');
-  console.log('I received the following DOM content:\n' + domContent);
-}
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+  if (request.message === 'game data') {
+    sendResponse({message: 'game data received'});
+    targetPage = request.targetPage;
+    goalTrail = request.trail;
+    chrome.runtime.sendMessage({message: 'data ready'});
+  }
+  else if (request.message === 'reset') {
+    targetPage = null;
+    goalTrail = null;
+    userTrail = null;
+    sendResponse({message: 'successful reset'});
+  }
+});
 
-chrome.browserAction.onClicked.addListener(function (tab) {
-  if (urlRegex.test(tab.url)) {
-      chrome.tabs.sendMessage(tab.id, {text: 'report_back'}, doStuffWithDom);
+chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+  if (changeInfo.url) {
+    userTrail.push(changeInfo.url);
+    chrome.runtime.sendMessage({message: 'navigated'});
   }
 });
