@@ -1,8 +1,8 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 
-var request = require('request');
-var cheerio = require('cheerio');
+var request = require('request'),
+    cheerio = require('cheerio');
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.message === 'start game') {
@@ -16,11 +16,13 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 function startGame(numHops) {
   var origin = document.origin,
       startHtml = document.documentElement.innerHTML,
+      startUrl = document.URL,
       counter = 0,
       trail = [];
 
   processHtml(startHtml);
 
+  //parse the html string for usable links
   function processHtml(html) {
     counter++;
     var $ = cheerio.load(html);
@@ -35,19 +37,19 @@ function startGame(numHops) {
       if (!error) processHtml(html);else console.error(error);
     });
   }
-  //note - must pass in $ in order to use cheerio
+  //get random link from page, note - must pass in $ in order to use cheerio
   function getNext(links, $) {
     var randomIndex = Math.floor(Math.random() * links.length);
     var next = origin + $(links[randomIndex]).attr('href');
     trail.push(next);
     return next;
   }
-  //send trail and target page to background for use in popup
+  //send trail, target page, and start to background for use in popup
   function sendGameData() {
     var message = { message: 'game data',
       trail: trail,
-      targetPage: trail[trail.length - 1]
-    };
+      targetPage: trail[trail.length - 1],
+      startUrl: startUrl };
     chrome.runtime.sendMessage(message);
   }
 }
