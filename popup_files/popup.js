@@ -25,10 +25,10 @@ function startGame(numHops) {
 
 function syncVars(){
   chrome.runtime.getBackgroundPage(function (backgroundPage) {
-    $('#target-page').text(backgroundPage.targetPage);
+    $('#target-page').text(backgroundPage.gameData.targetPage);
     $('#trail-list').html('');
-    if (backgroundPage.userTrail){
-      backgroundPage.userTrail.forEach(function(href){
+    if (backgroundPage.gameData.userTrail){
+      backgroundPage.gameData.userTrail.forEach(function(href){
         $('<li>' + href + '</li>').appendTo('#trail-list');
       });
     }
