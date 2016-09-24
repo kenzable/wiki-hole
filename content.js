@@ -4,11 +4,12 @@
 var request = require('request');
 var cheerio = require('cheerio');
 
-//listen for game start message from popup
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.message === 'start game') {
     startGame(request.hops);
     sendResponse({ message: 'game started' });
+  } else if (request.message === 'send url') {
+    sendResponse({ message: 'url sent', url: document.URL });
   }
 });
 
@@ -47,9 +48,7 @@ function startGame(numHops) {
       trail: trail,
       targetPage: trail[trail.length - 1]
     };
-    chrome.runtime.sendMessage(message, function (response) {
-      console.log('response is here!', response.message);
-    });
+    chrome.runtime.sendMessage(message);
   }
 }
 
