@@ -2,7 +2,8 @@ var gameData = {  targetPage: null,
                   goalTrail: null,
                   startUrl: null,
                   userTrail: [],
-                  currentGame: false };
+                  currentGame: false,
+                  victory: false };
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   if (request.message === 'game data') {
@@ -18,6 +19,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     gameData.targetPage = null;
     gameData.goalTrail = null;
     gameData.startUrl = null;
+    gameData.victory = false;
     gameData.userTrail = [];
     sendResponse({message: 'successful reset'});
   }
@@ -34,6 +36,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
         var index = gameData.userTrail.indexOf(response.url);
         if (index === -1 && response.url !== gameData.startUrl) {
           gameData.userTrail.push(response.url);
+          if (response.url === gameData.targetPage) gameData.victory = true;
           chrome.runtime.sendMessage({message: 'navigated'});
         }
         //if link is duplicate BUT not end of trail,
