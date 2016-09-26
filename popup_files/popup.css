@@ -2,3 +2,16 @@ body {
   min-width:200px;
   min-height: 250px;
 }
+
+.incorrect {
+  color: red;
+}
+
+.correct {
+  color: blue;
+}
+
+#victory {
+  color: red;
+  size: 40px;
+}

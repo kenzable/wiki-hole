@@ -6,9 +6,7 @@ $('#submit-button').on('click', function() {
 });
 
 $('#reset-button').on('click', function() {
-  chrome.runtime.sendMessage({message: 'reset'}, function(response){
-    if (response.message === 'successful reset') syncVars();
-  });
+  reset();
 });
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
@@ -23,14 +21,38 @@ function startGame(numHops) {
   });
 }
 
+function reset(){
+  chrome.runtime.sendMessage({message: 'reset'}, function(response){
+    if (response.message === 'successful reset') syncVars();
+  });
+}
+
 function syncVars(){
   chrome.runtime.getBackgroundPage(function (backgroundPage) {
-    $('#target-page').text(backgroundPage.gameData.targetPage);
-    $('#trail-list').html('');
-    if (backgroundPage.gameData.userTrail){
-      backgroundPage.gameData.userTrail.forEach(function(href){
-        $('<li>' + href + '</li>').appendTo('#trail-list');
-      });
-    }
+    if (backgroundPage.gameData.victory) buildVictory();
+    else buildPage(backgroundPage.gameData);
+  });
+}
+
+function buildPage(data){
+  $('#target-page').text(data.targetPage);
+  $('#trail-list').html('');
+  data.userTrail.forEach(function(pageUrl, index){
+    var element = $('<li>' + pageUrl + '</li>');
+    var goalTrail = data.goalTrail;
+    //check if url is the correct next step in trail
+    if (goalTrail[index] === pageUrl) element.addClass('correct');
+    else element.addClass('incorrect');
+    element.appendTo('#trail-list');
+  });
+}
+
+function buildVictory(){
+  var body = $('body')[0];
+  var content = $(body).html();
+  $(body).html('<h1 class="victory">YOU WON!!!</h1><button id="play-again">Play Again</button>');
+  $('#play-again').on('click', function(){
+    $(body).html(content);
+    reset();
   });
 }
